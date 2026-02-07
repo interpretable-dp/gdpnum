@@ -3,7 +3,21 @@
 [![CI](https://github.com/Felipe-Gomez/gdp-numeric/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Felipe-Gomez/gdp-numeric/actions/workflows/ci.yml)
 [![arXiv](https://img.shields.io/badge/arXiv-2503.10945-b31b1b.svg)](https://arxiv.org/abs/2503.10945)
 
-Library for numerically computing the privacy parameter in Gaussian Differential Privacy. This library is a companion to the _[(ε,δ) Considered Harmful: Best Practices for Reporting Differential Privacy Guarantees](https://arxiv.org/abs/2503.10945)_ paper.
+Library for numerically computing the correct, non-asymptotic Gaussian Differential Privacy (GDP) guarantees for DP-SGD or similar privacy-preserving algorithms.
+Correct, non-asymptotic GDP accurately and faithfully represents the privacy guarantees of many practical algorithms with just a single _mu_ parameter, enabling correct comparisons (unlike fixed epsilon/delta), and accurate conversions to interpretable notions of risk. See Gomez et al. (2026)[^1].
+
+[^1]: [Gaussian DP for Reporting Differential Privacy Guarantees in Machine Learning](https://arxiv.org/abs/2503.10945). IEEE SatML 2026.
+
+If you make use of the library or methods, please cite:
+```bibtex
+@inproceedings{gomez2026gaussian,
+  title={Gaussian DP for Reporting Differential Privacy Guarantees in Machine Learning},
+  author = {Gomez, Juan Felipe and Kulynych, Bogdan and Kaissis, Georgios and du Pin Calmon, Flavio and Hayes, Jamie and Balle, Borja and Honkela, Antti},
+  booktitle={2026 IEEE Conference on Secure and Trustworthy Machine Learning (SaTML)},
+  year={2026},
+  organization={IEEE}
+}
+```
 
 ## Quickstart
 

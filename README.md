@@ -1,7 +1,7 @@
 # gdpnum
 
 [![pypi](https://img.shields.io/pypi/v/gdpnum)](https://pypi.org/project/gdpnum)
-[![CI](https://github.com/interpretable-dp/gdp-numeric/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/interpretable-dp/gdp-numeric/actions/workflows/ci.yml)
+[![CI](https://github.com/interpretable-dp/gdpnum/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/interpretable-dp/gdpnum/actions/workflows/ci.yml)
 [![arXiv](https://img.shields.io/badge/arXiv-2503.10945-b31b1b.svg)](https://arxiv.org/abs/2503.10945)
 
 Library for numerically computing the correct, non-asymptotic Gaussian Differential Privacy (GDP) guarantees for DP-SGD or similar privacy-preserving algorithms.

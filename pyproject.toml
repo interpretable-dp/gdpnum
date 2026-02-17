@@ -1,13 +1,13 @@
 [project]
 name = "gdpnum"
-version = "0.1.1"
+version = "0.1.2"
 description = "Numeric computation of the privacy parameter in Gaussian Differential Privacy"
 readme = "README.md"
 authors = [
     { name = "Juan Felipe Gomez", email = "juangomez@g.harvard.edu" },
     { name = "Bogdan Kulynych", email = "bogdan@kulyny.ch" }
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "dp-accounting>=0.4.4",
 ]

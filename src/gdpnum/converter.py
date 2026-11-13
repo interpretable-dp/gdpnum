@@ -234,18 +234,14 @@ def _compute_breakpoints(pld: "dp_accounting.PrivacyLossDistribution"):
             - alpha_bar: float Pr[X > 0]
             - beta_bar:  float Pr[Y <= 0]
     """
-    # Extract PLRV data for remove-adjacent and add-adjacent cases
+    # Extract PLRV data for the remove-adjacent case
     y0, mass_inf_Y, pmf_Y = _get_plrv(pld._pmf_remove)
-    z0, mass_inf_Z, pmf_Z = _get_plrv(pld._pmf_add)
-    z_max = z0 + len(pmf_Z) - 1
+    pmf_Y = _normalize_pmf(pmf_Y, mass_inf_Y)
 
-    # Ensure PMFs are valid (correct numerical errors)
-    pmf_Y = _normalize_pmf(np.maximum(pmf_Y, 0), mass_inf_Y)
-    pmf_Z = _normalize_pmf(np.maximum(pmf_Z, 0), mass_inf_Z)
-
-    # Transform from PLRV Z to PLRV X (X = -Z)
-    pmf_X = pmf_Z[::-1]
-    x0 = -z_max
+    # Derive the PLRV X from Y via tilting.
+    discretization = pld._pmf_remove.to_dense_pmf()._discretization
+    pmf_X = pmf_Y * np.exp(-discretization * (y0 + np.arange(len(pmf_Y))))
+    x0 = y0
 
     # Compute the max values in the support of X and Y
     k = len(pmf_X)
@@ -267,14 +263,16 @@ def _compute_breakpoints(pld: "dp_accounting.PrivacyLossDistribution"):
     # Compute the alpha breakpoints
     cumsum_X = np.cumsum(pmf_X[start_x:][::-1])
     slice_idx = x_max - y_max - 1 if x_exceeds_y else 0
-    alphas = np.hstack((0, cumsum_X[slice_idx:], 1))
+    alphas = np.hstack(
+        (0, np.clip(np.maximum.accumulate(cumsum_X[slice_idx:]), 0.0, 1.0), 1)
+    )
 
     # Compute start index for the Y cumulative sums
     start_y = max(0, x0_idx_Y)
 
     # Compute beta breakpoints
     cumsum_Y = np.cumsum(pmf_Y[: x_max_idx_Y + 1])[start_y:][::-1]
-    betas = np.hstack((cumsum_Y, 0, 0))
+    betas = np.hstack((np.clip(np.minimum.accumulate(cumsum_Y), 0.0, 1.0), 0, 0))
 
     # Adjust betas based on x_exceeds_y
     if x_exceeds_y:
@@ -283,7 +281,7 @@ def _compute_breakpoints(pld: "dp_accounting.PrivacyLossDistribution"):
     # Compute alpha bar and beta_bar
     zero_index_X = -x0
     zero_index_Y = -y0
-    alpha_bar = np.sum(pmf_X[zero_index_X + 1 :])
+    alpha_bar = alphas[k - 1 - zero_index_X]
     beta_bar = np.sum(pmf_Y[: zero_index_Y + 1])
     return alphas, betas, alpha_bar, beta_bar
 

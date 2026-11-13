@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scipy import stats
+from scipy import optimize, stats
 
 from gdpnum import PLDConverter
 
@@ -66,3 +66,42 @@ def test_get_beta(mu):
     assert beta[-1] == pytest.approx(0.0)
     for i in range(1, k - 1):
         assert beta[i] != 0
+
+
+def _gdp_epsilon(mu, delta):
+    """Smallest epsilon such that mu-GDP implies (epsilon, delta)-DP."""
+
+    def delta_of(eps):
+        return stats.norm.cdf(-eps / mu + mu / 2) - np.exp(eps) * stats.norm.cdf(
+            -eps / mu - mu / 2
+        )
+
+    return optimize.brentq(lambda eps: delta_of(eps) - delta, 0, 100)
+
+
+def test_large_scale_dpsgd_gaussian_matches_pld():
+    delta = 1e-10
+    err = delta / 100
+    tolerance = 1e-3
+
+    # Regime of DP-SGD on a large dataset (tiny sampling rate, many steps).
+    pld = from_gaussian_mechanism(
+        standard_deviation=0.5,
+        sampling_prob=4e-5,
+        value_discretization_interval=tolerance,
+    ).self_compose(100_000)
+    converter = PLDConverter(pld)
+    alphas, betas = converter.alphas, converter.betas
+
+    assert np.all(betas <= 1 - alphas)
+
+    # Direct epsilon should be close to the epsilon we get from the curve.
+    eps_pld = pld.get_epsilon_for_delta(delta)
+    with np.errstate(divide="ignore", invalid="ignore"):  # suppress warnings.
+        eps_curve = np.nanmax(np.log((1 - betas - delta) / alphas))
+    assert eps_pld == pytest.approx(eps_curve, rel=tolerance)
+
+    # The epsilon obtained from GDP must be valid (not below the direct one),
+    # and not too loose.
+    eps_gdp = _gdp_epsilon(converter.get_mu(err=err), delta)
+    assert eps_pld <= eps_gdp <= eps_pld + 0.5
